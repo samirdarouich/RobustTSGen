@@ -1,0 +1,51 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=50G
+#SBATCH --gpus=A40:1
+#SBATCH --time=0-02:00:00
+#SBATCH --output=logs/sample_%x_job_%j.out
+#SBATCH --job-name=reactot
+#SBATCH --partition=fastlane
+
+module load Miniconda3
+source ${EBROOTMINICONDA3}/bin/activate
+conda activate reactot
+
+time_date=$(date +%Y_%m_%d_%H_%M_%S)
+echo "Job started on: ${time_date}"
+
+# Define paths
+model_path=checkpoint/ReactOT
+save_path=evaluation
+batch_size=72
+
+###### Original ######
+DATADIR="./reactot/data/xxx"
+
+# Normal sampling
+position_key=positions
+KWARGS=""
+
+# Transition1x-2p3p4p sampling
+position_key=positions_swap
+KWARGS="swap_charges_key=atomic_numbers_swap,use_swap_charges_one_hot=True,ext_atom_mapping=True"
+
+# TTransition1x-OOD / Transition1x-TMC / Rh-catalyzed / Pt-catalyzed sampling
+position_key=positions
+KWARGS="ext_atom_mapping=True,swap_charges_key=None"
+
+PATH_TO_CHECKPOINT="${model_path}/xxx/last.ckpt"
+SAVE_PATH="${save_path}/xxx"
+
+python evaluation.py \
+    --checkpoint $PATH_TO_CHECKPOINT \
+    --solver ode \
+    --nfe 10 \
+    --save_path $SAVE_PATH \
+    --write-xyz \
+    --datadir $DATADIR \
+    --position_key $position_key \
+    --training_config_kwargs "$KWARGS" \
+    --batch-size $batch_size

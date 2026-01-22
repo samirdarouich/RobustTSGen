@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=8
+#SBATCH -t 48:00:00
+#SBATCH -J reactot_train
+#SBATCH -o logs/%x_job_%j.out
+#SBATCH -e logs/%x_job_%j.out
+#SBATCH --mem=50GB
+#SBATCH --gres=gpu:1
+
+source ~/.bashrc
+conda activate reactot
+
+time_date=$(date +%Y_%m_%d_%H_%M_%S)
+echo "Job started on: ${time_date}"
+
+echo "Starting training"
+
+python -u train_rpsb_ts1x_swap.py
+# python -u train_rpsb_ts1x_tmc.py
+# python -u train_rpsb_ts1x_tmc_ood.py
