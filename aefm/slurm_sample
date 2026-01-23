@@ -1,0 +1,99 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=50G
+#SBATCH --gpus=A40:1
+#SBATCH --time=0-04:00:00
+#SBATCH --output=logs/%x_job_%j.out
+#SBATCH --job-name=aefm_sample
+#SBATCH --partition=fastlane
+
+module load Miniconda3
+source ${EBROOTMINICONDA3}/bin/activate
+conda activate aefm
+
+time_date=$(date +%Y_%m_%d_%H_%M_%S)
+echo "Job started on: ${time_date}"
+
+echo "Starting sampling"
+
+# Detailed logging
+export HYDRA_FULL_ERROR=1
+
+## T1x vanilla model ##
+# model=checkpoint/aefm/aefm_t1x/best_model
+# identifier='[rxn]'
+# samples_path=aefm/ts_guess/t1x_linear_guess_test.xyz
+# run_id=t1x/ts_guess_linear
+
+## T1x xTB vanilla model (finetuned from t1x DFT model) ##
+# model=checkpoint/aefm/aefm_t1x_xtb_finetune/best_model
+
+# T1x SWAP
+# identifier='[rxn,swap]'
+# samples_path=aefm/ts_guess/t1x_swap_linear_guess_test.xyz
+# run_id=t1x_swap/vanilla/ts_guess_linear
+
+# T1x OOD
+# identifier='[rxn,swap]'
+# samples_path=aefm/ts_guess/t1x_ood_linear_guess_test.xyz
+# run_id=t1x_ood/vanilla/ts_guess_linear
+
+# T1x TMC
+# identifier='[rxn,tm]'
+# samples_path=aefm/ts_guess/t1x_tmc_linear_guess_test.xyz
+# run_id=t1x_tmc/vanilla/ts_guess_linear
+
+# Pt cata
+# identifier='[rxn,tm]'
+# samples_path=aefm/ts_guess/pt_cata_linear_guess_test.xyz
+# run_id=pt_cata/vanilla/ts_guess_linear
+
+# Rh cata
+# identifier='[rxn,tm]'
+# samples_path=aefm/ts_guess/rh_cata_linear_guess_test.xyz
+# run_id=rh_cata/vanilla/ts_guess_linear
+
+
+## T1x xTB finetuned model (finetuned from t1x DFT model) ##
+
+#! T1x Swap finetuned
+# model=checkpoint/aefm/aefm_t1x_with_swap_finetune/best_model
+
+# T1x SWAP
+# identifier='[rxn,swap]'
+# samples_path=aefm/ts_guess/t1x_swap_linear_guess_test.xyz
+# run_id=t1x_swap/finetuned/ts_guess_linear
+
+# T1x OOD
+# identifier='[rxn,swap]'
+# samples_path=aefm/ts_guess/t1x_ood_linear_guess_test.xyz
+# run_id=t1x_ood/finetuned/ts_guess_linear
+
+#! T1x TMC finetuned
+model=checkpoint/aefm/aefm_t1x_with_tmc_finetune/best_model
+
+# T1x TMC
+# identifier='[rxn,tm]'
+# samples_path=aefm/ts_guess/t1x_tmc_linear_guess_test.xyz
+# run_id=t1x_tmc/finetuned/ts_guess_linear
+
+# Pt cata
+# identifier='[rxn,tm]'
+# samples_path=aefm/ts_guess/pt_cata_linear_guess_test.xyz
+# run_id=pt_cata/finetuned/ts_guess_linear
+
+# Rh cata
+identifier='[rxn,tm]'
+samples_path=aefm/ts_guess/rh_cata_linear_guess_test.xyz
+run_id=rh_cata/finetuned/ts_guess_linear
+
+
+aefm_sample \
+    experiment=sample_equiformer \
+    globals.model=${model} \
+    globals.samples_path=${samples_path} \
+    run.id=${run_id} \
+    aefmsampler.identifier=${identifier} \
+

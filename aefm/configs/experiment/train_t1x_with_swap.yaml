@@ -1,0 +1,96 @@
+# @package _global_
+
+defaults:
+  - aefm_equiformer
+  - override /callbacks:
+    - checkpoint
+    - lrmonitor
+    - ema
+    - earlystopping
+
+# Check paper for hyperparameters (https://arxiv.org/pdf/2403.09549)
+run:
+  experiment: MIT
+  data_dir: datasets/t1x_with_swap
+
+trainer:
+  gradient_clip_val: 100
+
+globals:
+  sigma: 0.11 # mean rmsd ~0.19
+
+data:
+  datapath: ${run.data_dir}/t1x_with_swap.db
+
+  batch_size: 64
+
+  split_file: ${run.data_dir}/splits/t1x_with_swap_oa_reactdiff_split.npz
+
+  num_train: 16536
+  num_val: 2058
+  num_test: 2328
+
+  reaction_id_key: reaction_ids_unique
+  
+  reaction_transforms:
+    - _target_: aefm.transform.reaction.AdaptivePrior
+      target_property: ${globals.flow_property}
+      # Define adaptive prior sigma
+      sigma: ${globals.sigma}
+      # If large sigma is used, it can help to align the input
+      align: True 
+      # Stability parameter for target
+      sigma_x_1: ${globals.sigma_x_1}
+
+  transforms:
+    - _target_: aefm.transform.ConditionalFlow
+      flow_property: ${globals.flow_property}
+      flow_process: ${globals.flow_process}
+      output_key: ${globals.target_key}
+      time_key: ${globals.time_target_key}
+
+    - _target_: schnetpack.transform.CastTo64
+    - _target_: aefm.transform.SubtractCenterOfGeometry
+    - _target_: schnetpack.transform.ASENeighborList
+      cutoff: ${globals.cutoff}
+    - _target_: aefm.transform.ComputeDistances
+      name: ${globals.target_positions_key}
+    - _target_: schnetpack.transform.CastTo32
+
+# This defines the training task.
+task:
+  skip_exploding_batches: True
+  outputs:
+    # Computes the MSE loss between the predicted and target positions
+    - _target_: schnetpack.task.ModelOutput
+      name: ${globals.target_output_key}
+      target_property: ${globals.target_key}
+      loss_fn:
+        _target_: torch.nn.MSELoss
+      metrics:
+        mse:
+          _target_: torchmetrics.regression.MeanSquaredError
+      loss_weight: 1.5
+    
+    # Computes the physical bond loss to avoid artefacts in generative models
+    - _target_: aefm.task.BondModelOutput
+      name: ${globals.target_output_key}
+      target_property: ${globals.target_positions_key}
+      cutoff: 2.0
+      loss_fn:
+        _target_: torch.nn.MSELoss
+      metrics:
+        mse_bond:
+          _target_: torchmetrics.regression.MeanSquaredError
+      loss_weight: 0.5
+  
+  # Regularization
+  optimizer_args:
+    weight_decay: 1.0e-3
+
+callbacks:
+  # if early stopping is needed
+  early_stopping:
+    patience: 50
+  ema:
+    decay: 0.999
