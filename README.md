@@ -1,6 +1,6 @@
 # Beyond the Training Domain: Robust Generative Transition State Models for Unseen Chemistry
 
-[![arXiv](https://img.shields.io/badge/arXiv-2507.16521-b31b1b.svg)](xxx)
+[![arXiv](https://img.shields.io/badge/arXiv-2507.16521-b31b1b.svg)](https://arxiv.org/abs/2601.16469)
 
 **Beyond the Training Domain: Robust Generative Transition State Models for Unseen Chemistry**  
 Samir Darouich, Jacob W. Toney, Weiliang Luo, Johannes Kästner, Mathias Niepert, and Heather J. Kulik
@@ -33,4 +33,10 @@ Pretrained models and the datasets are available at: https://doi.org/10.5281/zen
 
 ## 📕 Citation 
 
-xxx
+@article{
+    darouich2026trainingdomainrobustgenerative,
+    title={Beyond the Training Domain: Robust Generative Transition State Models for Unseen Chemistry}, 
+    author={Samir Darouich and Jacob W. Toney and Weiliang Luo and Johannes Kästner and Mathias Niepert and Heather J. Kulik},
+    year={2026},
+    journal={arXiv preprint arXiv:2601.16469},
+}
