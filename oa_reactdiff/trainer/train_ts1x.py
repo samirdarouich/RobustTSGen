@@ -88,14 +88,12 @@ training_config = dict(
     gradient_clip_val=None,
     ema=False,
     ema_decay=0.999,
-    swapping_react_prod=True, #! True to make model invariant to reactant/product swap
+    swapping_react_prod=True,
     append_frag=False,
     use_by_ind=True,
     reflection=False,
-    single_frag_only=False, #! this was true (but should not be)
+    single_frag_only=False,
     only_ts=False,
-    use_fingerprint_embedding=False, #! add fingerprint embedding. Only used if atom mapping is adapted.
-    use_periodic_embedding=False, #! add periodic embedding. Only used if atom mapping is adapted.
     lr_schedule_type=None,
     lr_schedule_config=dict(
         gamma=0.8,
@@ -209,14 +207,6 @@ ddpm = DDPMModule(
     feature_mapping=feature_mapping,
     z_embedding_dim=z_embedding_dim,
 )
-
-# if use_pretrain and source is not None:
-#     # Double check that the numerical values are the same
-#     pretrained_state = source["model"]
-#     current_state = ddpm.ddpm.dynamics.model.state_dict()
-#     for k in pretrained_state:
-#         assert torch.equal(pretrained_state[k], current_state[k]), f"Mismatch in weight for key: {k}"
-#     print("Pretrained weights verified: all weights match exactly.")
 
 if freeze_model:
     for param in ddpm.ddpm.dynamics.model.parameters():

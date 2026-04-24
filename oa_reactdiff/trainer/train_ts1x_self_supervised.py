@@ -105,9 +105,6 @@ elif "tmc_pt_ood" in version:
 elif "tmc_rh_ood" in version:
     datadir = "../data/transition1x_tmc/crest_ood/rh/"
     bz = 4
-elif "tmc_ood" in version:
-    datadir = "../data/transition1x_tmc/crest_ood/"
-    bz = 4
 elif "swap_ood" in version:
     datadir = "../data/transition1x_swap/crest_ood/"
 elif "swap" in version:
@@ -135,14 +132,12 @@ training_config = dict(
     gradient_clip_val=None,
     ema=False,
     ema_decay=0.999,
-    swapping_react_prod=True, #! stay consistent with previous
+    swapping_react_prod=True,
     append_frag=False,
     use_by_ind=True,
     reflection=False,
-    single_frag_only=False, #! this was true (but should not be)
+    single_frag_only=False,
     only_ts=False,
-    use_fingerprint_embedding=False, #! add fingerprint embedding. Only used if atom mapping is adapted.
-    use_periodic_embedding=False, #! add periodic embedding. Only used if atom mapping is adapted.
     lr_schedule_type=None,
     lr_schedule_config=dict(
         gamma=0.8,
@@ -273,14 +268,6 @@ ddpm = DDPMModule(
     z_embedding_dim=z_embedding_dim,
 )
 
-# if use_pretrain and source is not None:
-#     # Double check that the numerical values are the same
-#     pretrained_state = source["model"]
-#     current_state = ddpm.ddpm.dynamics.model.state_dict()
-#     for k in pretrained_state:
-#         assert torch.equal(pretrained_state[k], current_state[k]), f"Mismatch in weight for key: {k}"
-#     print("Pretrained weights verified: all weights match exactly.")
-
 if freeze_model:
     for param in ddpm.ddpm.dynamics.model.parameters():
         param.requires_grad = False
@@ -311,7 +298,6 @@ if trainer is None or (isinstance(trainer, Trainer) and trainer.is_global_zero):
     )
     try:  # Avoid errors for creating wandb instances multiple times
         wandb_logger.experiment.config.update(config)
-        #wandb_logger.watch(ddpm.ddpm.dynamics, log="all", log_freq=100, log_graph=False)
     except:
         pass
 
@@ -334,11 +320,6 @@ lr_monitor = LearningRateMonitor(logging_interval="step")
 callbacks = [earlystopping, checkpoint_callback, TQDMProgressBar(), lr_monitor]
 if training_config["ema"]:
     callbacks.append(EMACallback(decay=training_config["ema_decay"]))
-
-# if not os.path.isdir(ckpt_path):
-#     os.makedirs(ckpt_path)
-# shutil.copy(f"../model/{model_type}.py", f"{ckpt_path}/{model_type}.py")
-
 print("config: ", config)
 
 strategy = None
