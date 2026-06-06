@@ -47,7 +47,7 @@ To install AEFM it is advised to refer to the original repository (https://githu
 
 ## 2. Download data and checkpoints
 Download model checkpoints and datasets from Zenodo:  
-👉 https://doi.org/10.5281/zenodo.18338077
+👉 https://doi.org/10.5281/zenodo.18338076
 
 ---
 
